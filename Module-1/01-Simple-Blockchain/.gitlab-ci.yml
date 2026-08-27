@@ -1,0 +1,17 @@
+image: python:3.10
+
+stages:
+  - lint
+  - test
+
+pylint:
+  stage: lint
+  script:
+    - pip install pylint
+    - make lint
+
+pytest:
+  stage: test
+  script:
+    - pip install pytest
+    - make test

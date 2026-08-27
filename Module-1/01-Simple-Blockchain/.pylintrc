@@ -1,0 +1,5 @@
+[MASTER]
+init-hook='import sys; sys.path.append("./src/blockchain")'
+disable=
+    C0114, # missing-module-docstring
+    C0111, # missing-function-docstring
