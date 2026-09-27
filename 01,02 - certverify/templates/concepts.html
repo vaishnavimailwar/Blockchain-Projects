@@ -1,0 +1,115 @@
+{% extends "base.html" %}
+{% block title %}Module 1 Concepts - CertChain{% endblock %}
+{% block content %}
+
+<h1 class="page-title">Module 1 Blockchain Concepts in This Project</h1>
+<p class="page-desc">How each core concept from Blockchain Technology Module 1 is implemented here.</p>
+
+<div class="flow-diagram">
+    <div class="flow-step">Certificate Data</div>
+    <div class="flow-arrow">&darr;</div>
+    <div class="flow-step">SHA-256 Hash</div>
+    <div class="flow-arrow">&darr;</div>
+    <div class="flow-step">Merkle Root</div>
+    <div class="flow-arrow">&darr;</div>
+    <div class="flow-step">New Block</div>
+    <div class="flow-arrow">&darr;</div>
+    <div class="flow-step">Previous Hash Linking</div>
+    <div class="flow-arrow">&darr;</div>
+    <div class="flow-step">Blockchain</div>
+    <div class="flow-arrow">&darr;</div>
+    <div class="flow-step">Certificate / File Verification</div>
+    <div class="flow-arrow">&darr;</div>
+    <div class="flow-step">Tampering Detection</div>
+</div>
+
+<div class="concept-grid">
+
+    <div class="card concept-card">
+        <h3>1. Blockchain Fundamentals</h3>
+        <p>A blockchain is an ordered, append-only list of blocks where every block cryptographically references the one before it. Here, <span class="mono">blockchain.py</span> implements exactly this structure from scratch in pure Python.</p>
+    </div>
+
+    <div class="card concept-card">
+        <h3>2. Decentralized Ledger Concept</h3>
+        <p>Every issued certificate is treated as a permanent ledger entry. Instead of a central mutable "certificates" table, each record becomes an immutable block, mirroring how a distributed ledger records transactions.</p>
+    </div>
+
+    <div class="card concept-card">
+        <h3>3. Append-Only Data Structure</h3>
+        <p>New certificates are only ever added to the end of <span class="mono">self.chain</span> via <span class="mono">add_certificate()</span>. Existing blocks are never edited during normal operation.</p>
+    </div>
+
+    <div class="card concept-card">
+        <h3>4 &amp; 7. Blocks &amp; Block Structure</h3>
+        <p>Each block is a JSON object containing: index, timestamp, certificate data, certificate hash, Merkle root, previous hash, and current hash &mdash; visible directly in the Explorer.</p>
+    </div>
+
+    <div class="card concept-card">
+        <h3>5. Blockchain Architecture</h3>
+        <p>Flask (app.py) handles requests and rendering; blockchain.py is a self-contained ledger engine; JSON files provide persistence. This separation mirrors how real blockchain nodes separate application logic from ledger storage.</p>
+    </div>
+
+    <div class="card concept-card">
+        <h3>6. Genesis Block</h3>
+        <p>The very first block (index 0) is created automatically the first time the app runs, with a fixed previous hash of 64 zeros. It is clearly marked in the Explorer and can never be tampered with in this demo.</p>
+    </div>
+
+    <div class="card concept-card">
+        <h3>8. Block Index</h3>
+        <p>Every block has a strictly increasing <span class="mono">index</span> field, starting at 0, giving each block a unique, ordered position in the chain.</p>
+    </div>
+
+    <div class="card concept-card">
+        <h3>9. Timestamp</h3>
+        <p>Every block records the exact date and time it was created using <span class="mono">datetime.now()</span>, providing an auditable creation record.</p>
+    </div>
+
+    <div class="card concept-card">
+        <h3>10. Certificate Data / Transactions</h3>
+        <p>The certificate fields (student name, USN, course, title, issue date, certificate ID, and optional file hash) act as the "transaction" payload carried inside each block.</p>
+    </div>
+
+    <div class="card concept-card">
+        <h3>11. SHA-256 Hashing</h3>
+        <p>SHA-256 is used everywhere: hashing certificate data, computing Merkle leaves, computing the final block hash, and hashing the raw bytes of any uploaded certificate file.</p>
+    </div>
+
+    <div class="card concept-card">
+        <h3>12 &amp; 13. Current Hash &amp; Previous Hash</h3>
+        <p>Each block stores its own <span class="mono">current_hash</span> and the <span class="mono">previous_hash</span> copied from the prior block, forming the cryptographic chain.</p>
+    </div>
+
+    <div class="card concept-card">
+        <h3>14. Chain Linking</h3>
+        <p>Because each block's previous_hash must equal the prior block's current_hash, changing any block breaks the link to every block that follows it &mdash; this is what makes the structure a "chain".</p>
+    </div>
+
+    <div class="card concept-card">
+        <h3>15. Immutability</h3>
+        <p>Any edit to a block's certificate data changes its hash, which breaks the link to later blocks. This makes silent, undetected edits practically impossible &mdash; the core promise of blockchain immutability.</p>
+    </div>
+
+    <div class="card concept-card">
+        <h3>16. Tampering Detection</h3>
+        <p>The Tampering Demo page lets you directly edit stored certificate data. <span class="mono">validate_chain()</span> immediately flags the mismatch between the data and its recorded hash. File-based tampering is caught the same way: any change to the certificate file bytes changes its SHA-256 hash on re-verification.</p>
+    </div>
+
+    <div class="card concept-card">
+        <h3>17. Chain Validation</h3>
+        <p><span class="mono">validate_chain()</span> re-computes every hash and every link for the entire chain and reports exactly which block(s) failed and why &mdash; shown live in the Explorer and Tampering Demo.</p>
+    </div>
+
+    <div class="card concept-card">
+        <h3>18. Merkle Tree Concept</h3>
+        <p>Each block's certificate fields are individually hashed as "leaves", then paired and hashed together repeatedly until a single Merkle Root remains, via <span class="mono">compute_merkle_root()</span>. This demonstrates how Merkle trees let large amounts of data be summarized into one fixed-size fingerprint.</p>
+    </div>
+
+    <div class="card concept-card">
+        <h3>19. Document / File Integrity Verification</h3>
+        <p>Beyond text data, the project extends hashing to real files: an uploaded certificate's raw bytes are hashed with SHA-256 at issue time and stored on-chain, then re-hashed at verification time. Any modification to the file &mdash; even a single changed pixel or byte &mdash; produces a completely different hash, instantly exposing forged or altered certificate documents.</p>
+    </div>
+
+</div>
+
+{% endblock %}

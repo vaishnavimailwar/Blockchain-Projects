@@ -1,0 +1,67 @@
+{% extends "base.html" %}
+{% block title %}Blockchain Explorer - CertChain{% endblock %}
+{% block content %}
+
+<h1 class="page-title">Blockchain Explorer</h1>
+<p class="page-desc">Every block ever added to the chain, in order, with its full internal structure.</p>
+
+<div class="chain-status-banner {{ 'banner-valid' if is_valid else 'banner-invalid' }}">
+    {% if is_valid %}
+        CHAIN VALID: TRUE
+    {% else %}
+        TAMPERING DETECTED: BLOCKCHAIN INVALID
+    {% endif %}
+</div>
+
+<div class="block-list">
+    {% for block in chain %}
+    {% set r = report_by_index[block.index] %}
+    <div class="card block-card {{ 'block-invalid' if not r.valid else '' }}">
+        <div class="block-card-header">
+            <div>
+                <span class="block-index">Block #{{ block.index }}</span>
+                {% if block.index == 0 %}
+                    <span class="badge badge-genesis">Genesis Block</span>
+                {% endif %}
+            </div>
+            <div class="{{ 'text-valid' if r.valid else 'text-invalid' }}">
+                {{ "VALID" if r.valid else "INVALID" }}
+            </div>
+        </div>
+
+        <div class="block-card-body">
+            <p><strong>Timestamp:</strong> {{ block.timestamp }}</p>
+
+            <p><strong>Certificate Data:</strong></p>
+            <pre class="mono data-block">{{ block.certificate_data | tojson(indent=2) }}</pre>
+
+            <p><strong>Certificate Hash:</strong></p>
+            <p class="mono break">{{ block.certificate_hash }}</p>
+
+            <p><strong>Merkle Root:</strong></p>
+            <p class="mono break">{{ block.merkle_root }}</p>
+
+            <p><strong>Previous Hash:</strong></p>
+            <p class="mono break">{{ block.previous_hash }}</p>
+
+            <p><strong>Current Hash:</strong></p>
+            <p class="mono break">{{ block.current_hash }}</p>
+
+            {% if not r.valid %}
+            <div class="alert alert-danger">
+                <ul>
+                    {% for err in r.errors %}
+                    <li>{{ err }}</li>
+                    {% endfor %}
+                </ul>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+    {% if not loop.last %}
+    <div class="chain-link-arrow">&#8595; linked by previous_hash &#8595;</div>
+    {% endif %}
+    {% endfor %}
+</div>
+
+{% endblock %}

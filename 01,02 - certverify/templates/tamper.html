@@ -1,0 +1,81 @@
+{% extends "base.html" %}
+{% block title %}Tampering Demo - CertChain{% endblock %}
+{% block content %}
+
+<h1 class="page-title">Tampering Detection Demo</h1>
+<p class="page-desc">
+    Pick a certificate below and change its data to simulate an attacker directly editing the
+    stored blockchain. Then observe how validation instantly flags the block as invalid.
+    Nothing here is permanent &mdash; use "Restore Blockchain" to undo the tamper at any time.
+</p>
+
+<div class="chain-status-banner {{ 'banner-valid' if is_valid else 'banner-invalid' }}">
+    {% if is_valid %}
+        CHAIN VALID: TRUE
+    {% else %}
+        TAMPERING DETECTED: BLOCKCHAIN INVALID
+    {% endif %}
+</div>
+
+<div class="two-col">
+    <div class="card">
+        <h2>1. Tamper With a Block</h2>
+        {% if certificate_blocks %}
+        <form method="POST" action="{{ url_for('tamper') }}">
+            <input type="hidden" name="action" value="tamper">
+
+            <label>Select Certificate Block</label>
+            <select name="index" required>
+                {% for block in certificate_blocks %}
+                <option value="{{ block.index }}">
+                    Block #{{ block.index }} &mdash; {{ block.certificate_data.certificate_id }} ({{ block.certificate_data.student_name }})
+                </option>
+                {% endfor %}
+            </select>
+
+            <label>New Student Name (leave blank for default tamper)</label>
+            <input type="text" name="new_student_name" placeholder="e.g. Someone Else">
+
+            <label>New Certificate Title (optional)</label>
+            <input type="text" name="new_title" placeholder="e.g. Forged Title">
+
+            <button type="submit" class="btn btn-danger btn-block">Simulate Tampering</button>
+        </form>
+        {% else %}
+        <p class="muted">No certificates issued yet. <a href="{{ url_for('issue') }}">Issue one first</a>.</p>
+        {% endif %}
+    </div>
+
+    <div class="card">
+        <h2>2. Restore Blockchain</h2>
+        <p class="muted">Reverts the entire chain to the last known-good backup (taken automatically every time a certificate is legitimately issued).</p>
+        <form method="POST" action="{{ url_for('tamper') }}">
+            <input type="hidden" name="action" value="restore">
+            <button type="submit" class="btn btn-secondary btn-block">Restore Blockchain</button>
+        </form>
+    </div>
+</div>
+
+<div class="card">
+    <h2>3. Current Chain State</h2>
+    <table class="data-table">
+        <thead>
+            <tr><th>Index</th><th>Type</th><th>Status</th><th>Certificate ID</th><th>Student Name</th></tr>
+        </thead>
+        <tbody>
+        {% for block in chain %}
+        {% set r = report_by_index[block.index] %}
+        <tr class="{{ 'row-invalid' if not r.valid else '' }}">
+            <td>#{{ block.index }}</td>
+            <td>{% if block.index == 0 %}Genesis{% else %}Certificate{% endif %}</td>
+            <td class="{{ 'text-valid' if r.valid else 'text-invalid' }}">{{ "VALID" if r.valid else "INVALID" }}</td>
+            <td>{{ block.certificate_data.get('certificate_id', '-') }}</td>
+            <td>{{ block.certificate_data.get('student_name', '-') }}</td>
+        </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+    <a href="{{ url_for('explorer') }}" class="link-more">View full block details in Explorer &rarr;</a>
+</div>
+
+{% endblock %}

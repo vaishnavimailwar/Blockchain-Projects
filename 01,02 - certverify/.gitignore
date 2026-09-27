@@ -1,0 +1,7 @@
+venv/
+__pycache__/
+*.pyc
+blockchain_data.json
+blockchain_backup.json
+uploads/*
+!uploads/.gitkeep

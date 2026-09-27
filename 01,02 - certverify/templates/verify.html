@@ -1,0 +1,104 @@
+{% extends "base.html" %}
+{% block title %}Verify Certificate - CertChain{% endblock %}
+{% block content %}
+
+<h1 class="page-title">Verify Certificate</h1>
+<p class="page-desc">Enter a Certificate ID, and optionally upload the certificate file, to check whether it exists on the chain and whether it has been tampered with.</p>
+
+<div class="card">
+    <form method="POST" action="{{ url_for('verify') }}" enctype="multipart/form-data">
+        <label>Certificate ID</label>
+        <div class="inline-form">
+            <input type="text" name="certificate_id" required placeholder="e.g. CERT-A1B2C3D4" value="{{ searched_id or '' }}">
+            <button type="submit" class="btn btn-primary">Verify</button>
+        </div>
+
+        <label>Upload Certificate File (optional &mdash; PDF, PNG, JPG, JPEG)</label>
+        <input type="file" name="certificate_file" accept=".pdf,.png,.jpg,.jpeg">
+        <p class="field-hint">If the certificate was issued with a file, uploading it here checks the file's actual SHA-256 hash against the one stored on the blockchain.</p>
+    </form>
+</div>
+
+{% if result %}
+    {% if result.found %}
+        <div class="card result-box {{ 'result-success' if result.block_valid else 'result-danger' }}">
+            <h2>
+                {% if result.block_valid %}
+                    Certificate Found &mdash; VERIFICATION STATUS: VALID
+                {% else %}
+                    Certificate Found &mdash; VERIFICATION STATUS: TAMPERING DETECTED
+                {% endif %}
+            </h2>
+
+            <table class="data-table">
+                <tr><th>Student Name</th><td>{{ result.block.certificate_data.student_name }}</td></tr>
+                <tr><th>USN / Student ID</th><td>{{ result.block.certificate_data.usn }}</td></tr>
+                <tr><th>Course / Department</th><td>{{ result.block.certificate_data.course }}</td></tr>
+                <tr><th>Certificate Title</th><td>{{ result.block.certificate_data.title }}</td></tr>
+                <tr><th>Issue Date</th><td>{{ result.block.certificate_data.issue_date }}</td></tr>
+            </table>
+
+            <p>Certificate Hash</p>
+            <p class="mono break">{{ result.block.certificate_hash }}</p>
+
+            <p>Block Index</p>
+            <p class="mono">#{{ result.block.index }}</p>
+
+            <p>Block Hash (Current Hash)</p>
+            <p class="mono break">{{ result.block.current_hash }}</p>
+
+            <p>Previous Hash</p>
+            <p class="mono break">{{ result.block.previous_hash }}</p>
+
+            {% if not result.block_valid %}
+                <div class="alert alert-danger">
+                    <strong>Integrity check failed for this block:</strong>
+                    <ul>
+                        {% for err in result.block_errors %}
+                        <li>{{ err }}</li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            {% endif %}
+
+            {% if not result.chain_valid %}
+                <div class="alert alert-warning">
+                    Note: the overall blockchain currently has a validation issue elsewhere. Visit the
+                    <a href="{{ url_for('explorer') }}">Blockchain Explorer</a> for full details.
+                </div>
+            {% endif %}
+
+            {% if file_check and file_check.checked %}
+                {% if not file_check.has_stored_file %}
+                    <div class="alert alert-warning">
+                        This certificate has no file hash stored on the blockchain to compare against
+                        (it was issued without an uploaded file).
+                    </div>
+                {% elif file_check.match %}
+                    <div class="result-box result-success" style="margin-top:16px;">
+                        <h2>CERTIFICATE FILE AUTHENTIC &mdash; VALID</h2>
+                        <p>Uploaded File Hash</p>
+                        <p class="mono break">{{ file_check.uploaded_hash }}</p>
+                        <p>Stored File Hash</p>
+                        <p class="mono break">{{ file_check.stored_hash }}</p>
+                    </div>
+                {% else %}
+                    <div class="result-box result-danger" style="margin-top:16px;">
+                        <h2>TAMPERING DETECTED &mdash; CERTIFICATE FILE INVALID</h2>
+                        <p>Uploaded File Hash</p>
+                        <p class="mono break">{{ file_check.uploaded_hash }}</p>
+                        <p>Stored File Hash</p>
+                        <p class="mono break">{{ file_check.stored_hash }}</p>
+                    </div>
+                {% endif %}
+            {% endif %}
+        </div>
+    {% else %}
+        <div class="card result-box result-danger">
+            <h2>Certificate Not Found</h2>
+            <p>No certificate with ID <span class="mono">{{ searched_id }}</span> exists on this blockchain.</p>
+        </div>
+    {% endif %}
+{% endif %}
+
+{% endblock %}

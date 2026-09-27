@@ -1,0 +1,73 @@
+{% extends "base.html" %}
+{% block title %}Home - CertChain{% endblock %}
+{% block content %}
+
+<section class="hero">
+    <span class="hero-badge">Blockchain Technology &middot; Module 1 Major Project</span>
+    <h1>Certificate Verification Using Blockchain</h1>
+    <p class="subtitle">
+        A simplified blockchain built from scratch in Python to issue tamper-evident
+        academic certificates and verify them instantly &mdash; complete with SHA-256
+        hashing, block linking, a Merkle root, and real certificate file integrity checks.
+    </p>
+    <div class="hero-actions">
+        <a href="{{ url_for('issue') }}" class="btn btn-primary">Issue a Certificate</a>
+        <a href="{{ url_for('verify') }}" class="btn btn-secondary">Verify a Certificate</a>
+    </div>
+</section>
+
+<section class="stats-grid">
+    <div class="card stat-card">
+        <div class="stat-value">{{ stats.total_blocks }}</div>
+        <div class="stat-label">Total Blocks</div>
+    </div>
+    <div class="card stat-card">
+        <div class="stat-value">{{ stats.total_certificates }}</div>
+        <div class="stat-label">Total Certificates Issued</div>
+    </div>
+    <div class="card stat-card">
+        <div class="stat-value {{ 'text-valid' if stats.chain_valid else 'text-invalid' }}">
+            {{ "VALID" if stats.chain_valid else "INVALID" }}
+        </div>
+        <div class="stat-label">Chain Status</div>
+    </div>
+</section>
+
+<section class="card">
+    <h2>Recently Added Blocks</h2>
+    {% if recent_blocks %}
+    <table class="data-table">
+        <thead>
+            <tr><th>Index</th><th>Type</th><th>Timestamp</th><th>Current Hash</th></tr>
+        </thead>
+        <tbody>
+        {% for block in recent_blocks %}
+            <tr>
+                <td>#{{ block.index }}</td>
+                <td>{% if block.index == 0 %}<span class="badge badge-genesis">Genesis</span>{% else %}Certificate{% endif %}</td>
+                <td>{{ block.timestamp }}</td>
+                <td class="mono truncate">{{ block.current_hash }}</td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+    {% endif %}
+    <a href="{{ url_for('explorer') }}" class="link-more">Open full Blockchain Explorer &rarr;</a>
+</section>
+
+<section class="quick-nav">
+    <a href="{{ url_for('explorer') }}" class="card quick-card">
+        <h3>Blockchain Explorer</h3>
+        <p>Inspect every block, its Merkle root, and its hash links.</p>
+    </a>
+    <a href="{{ url_for('tamper') }}" class="card quick-card">
+        <h3>Tampering Demo</h3>
+        <p>Modify a certificate and watch the chain detect it instantly.</p>
+    </a>
+    <a href="{{ url_for('concepts') }}" class="card quick-card">
+        <h3>Module 1 Concepts</h3>
+        <p>See how this project maps to core blockchain theory.</p>
+    </a>
+</section>
+
+{% endblock %}
